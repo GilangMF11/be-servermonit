@@ -16,10 +16,14 @@ exports.getStatus = async (req, res) => {
     }
 
     let lastData = null;
+    let deviceStatus = 'UNKNOWN';
     try {
       const result = await pool.query('SELECT recorded_at FROM sensor_readings ORDER BY recorded_at DESC LIMIT 1');
       if (result.rows.length > 0) {
         lastData = result.rows[0].recorded_at;
+        const age = (Date.now() - new Date(lastData).getTime()) / 1000;
+        const timeout = parseInt(process.env.ESP32_TIMEOUT_SEC) || 45;
+        deviceStatus = age > timeout ? 'DISCONNECTED' : 'CONNECTED';
       }
     } catch (e) {}
 
@@ -38,7 +42,7 @@ exports.getStatus = async (req, res) => {
             connection_pool: poolInfo
           },
           esp32_device: {
-            status: lastData ? 'CONNECTED' : 'UNKNOWN',
+            status: deviceStatus,
             last_data_received: lastData
           }
         }
