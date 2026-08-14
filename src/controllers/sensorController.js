@@ -1,5 +1,6 @@
 const pool = require('../utils/db');
 const { sendPushToAll } = require('../utils/fcm');
+const { sendWhatsApp } = require('../utils/whatsapp');
 
 exports.submitSensorData = async (req, res) => {
   try {
@@ -281,6 +282,9 @@ async function createAlert(type, severity, value, threshold, message) {
 
     sendPushToAll(alert).catch(e =>
       console.error('[FCM] sendPushToAll error:', e)
+    );
+    sendWhatsApp(alert).catch(e =>
+      console.error('[WA] sendWhatsApp error:', e)
     );
   } catch (error) {
     console.error('Error creating alert:', error);
